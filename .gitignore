@@ -1,0 +1,10 @@
+# Ignore local environment keys
+.env
+*.csv
+
+# Ignore Python cache folders
+__pycache__/
+*.pyc
+
+# Ignore PyCharm configuration folder
+.idea/
