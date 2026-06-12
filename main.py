@@ -1,27 +1,55 @@
 import boto3
+import time
 
 
-def test_aws_connection():
-    # 1. Connect to the S3 service using the credentials stored on your computer
+def upload_and_transcribe():
+    # Names of your files and bucket
+    bucket_name = "subtitle-generator-input-bucket"  # ⚠️ Make sure this matches your exact bucket name
+    local_file = "testaudio.mp4"  # The file you just put in PyCharm
+    cloud_file = "input_audio.mp3"  # What it will be named in S3
+    job_name = f"SubtitleJob-{int(time.time())}"  # Unique name for the AI job
+
+    # Initialize AWS clients
     s3 = boto3.client('s3', region_name='us-east-1')
+    transcribe = boto3.client('transcribe', region_name='us-east-1')
 
     try:
-        # 2. Request a list of all your S3 buckets from Amazon
-        print("Connecting to AWS...")
-        response = s3.list_buckets()
+        # Step 1: Upload the file to S3
+        print(f"1. Uploading '{local_file}' to your S3 bucket...")
+        s3.upload_file(local_file, bucket_name, cloud_file)
+        print("   Uploaded successfully!")
 
-        print("\n🎉 SUCCESS! Your PyCharm is perfectly connected to AWS.")
-        print("Here are your current S3 storage lockers:")
+        # Step 2: Trigger AWS Transcribe
+        file_uri = f"https://s3.amazonaws.com/{bucket_name}/{cloud_file}"
+        print(f"\n2. Sending file to AWS Transcribe AI...")
+        transcribe.start_transcription_job(
+            TranscriptionJobName=job_name,
+            Media={'MediaFileUri': file_uri},
+            MediaFormat='mp4',
+            LanguageCode='en-US'
+        )
 
-        # 3. Print out the names of your buckets
-        for bucket in response['Buckets']:
-            print(f" -> {bucket['Name']}")
+        # Step 3: Wait for the AI to finish
+        print("3. Waiting for the AI to finish listening...")
+        while True:
+            status = transcribe.get_transcription_job(TranscriptionJobName=job_name)
+            job_status = status['TranscriptionJob']['TranscriptionJobStatus']
+
+            if job_status == 'COMPLETED':
+                transcript_url = status['TranscriptionJob']['Transcript']['TranscriptFileUri']
+                print("\n🎉 SUCCESS! AWS Transcribe has finished processing your audio.")
+                print(f"Your raw subtitle data link:\n{transcript_url}")
+                break
+            elif job_status == 'FAILED':
+                print("\n❌ Transcription job failed.")
+                break
+
+            print("   AI is still processing... checking again in 10 seconds.")
+            time.sleep(10)
 
     except Exception as e:
-        print("\n❌ Connection failed.")
-        print(f"Error details: {e}")
+        print(f"\n❌ An error occurred: {e}")
 
 
-# This tells Python to run our function immediately when we hit play
 if __name__ == "__main__":
-    test_aws_connection()
+    upload_and_transcribe()
