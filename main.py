@@ -4,9 +4,9 @@ import time
 
 def upload_and_transcribe():
     # Names of your files and bucket
-    bucket_name = "subtitle-test123"  # ⚠️ Make sure this matches your exact bucket name
-    local_file = "testaudio.mp4"  # The file you just put in PyCharm
-    cloud_file = "input_audio.mp4"  # What it will be named in S3
+    bucket_name = "subtitle-generator-personal"  # ⚠️ Make sure this matches your exact bucket name
+    local_file = "KaikaiKitan.mp3"  # The file you just put in PyCharm
+    cloud_file = "input_audio.mp3"  # What it will be named in S3
     job_name = f"SubtitleJob-{int(time.time())}"  # Unique name for the AI job
 
     # Initialize AWS clients
