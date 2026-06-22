@@ -1,10 +1,17 @@
-# Ignore local environment keys
-.env
-*.csv
-
-# Ignore Python cache folders
 __pycache__/
 *.pyc
+venv/
+.env
+.aws/
 
-# Ignore PyCharm configuration folder
+# Media Files
+*.mp3
+*.mp4
+*.wav
+
+# Subtitle Outputs
+*.srt
+*.vtt
+
+# Ignore the IDE folder itself completely
 .idea/
