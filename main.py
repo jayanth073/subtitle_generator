@@ -1,17 +1,17 @@
 import boto3
 import time
 
-
 def upload_and_transcribe():
-    # Names of your files and bucket
-    bucket_name = "subtitle-generator-personal"  # ⚠️ Make sure this matches your exact bucket name
-    local_file = "KaikaiKitan.mp3"  # The file you just put in PyCharm
-    cloud_file = "input_audio.mp3"  # What it will be named in S3
-    job_name = f"SubtitleJob-{int(time.time())}"  # Unique name for the AI job
+    # 1. Update this to match your EXACT bucket name from your console
+    bucket_name = "subtitle-genrator-rqw" 
+    local_file = "b1.mp3"  
+    cloud_file = "input_audio.mp3"  
+    job_name = f"SubtitleJob-{int(time.time())}"  
 
-    # Initialize AWS clients
-    s3 = boto3.client('s3', region_name='us-east-1')
-    transcribe = boto3.client('transcribe', region_name='us-east-1')
+    # Force boto3 to look at your newly authenticated 'subtitle' profile
+    session = boto3.Session(profile_name='default')
+    s3 = session.client('s3', region_name='us-east-1')
+    transcribe = session.client('transcribe', region_name='us-east-1')
 
     try:
         # Step 1: Upload the file to S3
@@ -25,7 +25,7 @@ def upload_and_transcribe():
         transcribe.start_transcription_job(
             TranscriptionJobName=job_name,
             Media={'MediaFileUri': file_uri},
-            MediaFormat='mp4',
+            MediaFormat='mp3',  # <-- FIXED: Your file is an .mp3, changed from 'mp4'
             LanguageCode='en-US'
         )
 
@@ -37,19 +37,18 @@ def upload_and_transcribe():
 
             if job_status == 'COMPLETED':
                 transcript_url = status['TranscriptionJob']['Transcript']['TranscriptFileUri']
-                print("\n🎉 SUCCESS! AWS Transcribe has finished processing your audio.")
+                print("\n[SUCCESS] AWS Transcribe has finished processing your audio.") # <-- FIXED: Removed emoji
                 print(f"Your raw subtitle data link:\n{transcript_url}")
                 break
             elif job_status == 'FAILED':
-                print("\n❌ Transcription job failed.")
+                print("\n[FAILED] Transcription job failed.") # <-- FIXED: Removed emoji
                 break
 
             print("   AI is still processing... checking again in 10 seconds.")
             time.sleep(10)
 
     except Exception as e:
-        print(f"\n❌ An error occurred: {e}")
-
+        print(f"\n[ERROR] An error occurred: {e}")
 
 if __name__ == "__main__":
     upload_and_transcribe()
