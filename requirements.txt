@@ -1,2 +1,6 @@
 boto3
-awscli
+aws s3 bucket
+aws IAM
+aws lambda
+aws Transcribe
+    
